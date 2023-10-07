@@ -1,3 +1,13 @@
+## Misfit.ID Score Model
+
+How to run:
+
+1. Install Bun 
+2. Run `bun index.ts > out`
+3. Simulation will be spitted out as `out`
+
+## Spec?
+
 Green Checkmark Threshold = 0.95
 
 Trustworthiness = 
