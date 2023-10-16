@@ -16,8 +16,10 @@ export const KYC_ID_BOOST = {
 }
 
 export const DECAY_FACTOR = 0.02
+
 export const GREEN_CHECKMARK_THRESHOLD = 0.9
-export const RAW_GEREEN_CHECKMARK_THRESHOLD = 0.6
+export const RAW_GEREEN_CHECKMARK_THRESHOLD = 0.5
+export const REMOVAL_THRESHOLD = 0.4;
 
 export const MAX_WALKUP_DEPTH = 2;
 

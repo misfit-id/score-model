@@ -9,6 +9,7 @@ import {
 export class Profile {
   isRoot: boolean
 
+  num: number
   socialNetworks: string[]
   quadraticVouch: number[]
   kycIDBoost: string
@@ -21,6 +22,7 @@ export class Profile {
 
   constructor(config: {
       isRoot: boolean,
+      num: number,
 
       socialNetworks: string[]
       vouches?: number[],
@@ -30,6 +32,8 @@ export class Profile {
       invitee?: Profile[],
   }) {
     this.isRoot = config.isRoot
+    this.num = config.num
+
     this.socialNetworks = config.socialNetworks;
     this.quadraticVouch = config.vouches ? config.vouches : []
     this.kycIDBoost = config.kycIDBoost ? config.kycIDBoost : ""
