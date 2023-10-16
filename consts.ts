@@ -17,11 +17,14 @@ export const KYC_ID_BOOST = {
 
 export const DECAY_FACTOR = 0.02
 export const GREEN_CHECKMARK_THRESHOLD = 0.9
-export const MAX_WALKDOWN_DEPTH = 1;
+export const RAW_GEREEN_CHECKMARK_THRESHOLD = 0.6
+
+export const MAX_WALKUP_DEPTH = 2;
 
 export const WALKUP_DECAY = 1;
 export const WALKDOWN_DECAY = 1;
 
 export const ASSUMED_CHECKMARK_VALUE_USD = 1000
 export const TOKEN_ISSUANCE = 20_000_000
-  
+
+export const VOTE_PRICE_ETH = 0.01;

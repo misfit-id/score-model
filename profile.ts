@@ -3,11 +3,7 @@ import {
   KYC_ID_BOOST,
 
   GREEN_CHECKMARK_THRESHOLD,
-  
-  DECAY_FACTOR,
-  MAX_WALKDOWN_DEPTH,
-  WALKDOWN_DECAY,
-  WALKUP_DECAY,
+  VOTE_PRICE_ETH,
 } from './consts'
 
 export class Profile {
@@ -19,48 +15,27 @@ export class Profile {
 
   inviter: Profile | undefined
   invitee: Profile[]
-  
 
-  // caching fields
-  currentScore: number
+  baseScore: number = 0
+  weightedScore: number = 0
 
   constructor(config: {
       isRoot: boolean,
 
-      farcaster?: boolean,
-      shortENS?: boolean,
-      lens?: boolean,
-      ENS?: boolean,
-
-      github?: boolean,
-      twitter?: boolean,
-      gmail?: boolean,
-
-
+      socialNetworks: string[]
       vouches?: number[],
       kycIDBoost?: string,
 
       inviter?: Profile,
-      invitee: Profile[],
+      invitee?: Profile[],
   }) {
     this.isRoot = config.isRoot
-    this.socialNetworks = [
-      config.farcaster ? "Farcaster" : "",
-      config.shortENS ? "ShortENS" : "",
-      config.lens ? "Lens" : "",
-      config.ENS ? "ENS" : "",
-      config.github ? "Github" : "",
-      config.twitter ? "Twitter" : "",
-      config.gmail ? "Gmail" : "",
-    ].filter(x => x != "")
-
+    this.socialNetworks = config.socialNetworks;
     this.quadraticVouch = config.vouches ? config.vouches : []
     this.kycIDBoost = config.kycIDBoost ? config.kycIDBoost : ""
 
     this.inviter = config.inviter
-    this.invitee = config.invitee
-
-    this.currentScore = 0
+    this.invitee = config.invitee ? config.invitee : [];
   }
 
   baseSocialMediaScore(): number {
@@ -86,68 +61,37 @@ export class Profile {
     return kycIDBoost;
   }
 
-  walkupScore(): number {
-    let networkWalkupScale = 1;
-    let lastInviter = this.inviter;
-    let steps = 1;
-    while (lastInviter != null) {
-      networkWalkupScale += 
-        (
-          lastInviter.score() - 
-          GREEN_CHECKMARK_THRESHOLD
-        ) 
-          * 
-        (
-          1 - DECAY_FACTOR
-        ) ** steps;
-
-      steps++;            
-      lastInviter = lastInviter.inviter;
-    }
-
-    return networkWalkupScale * WALKUP_DECAY;
-  }
-
-  walkdownScore(): number {
-    let networkWalkdownScale = 1;
-    let steps = 1;
-
-    while (steps <= MAX_WALKDOWN_DEPTH) {
-      for (const invitee of this.invitee) {
-        networkWalkdownScale += 
-          (
-            invitee.score() - 
-            GREEN_CHECKMARK_THRESHOLD
-          ) 
-            * 
-          (
-            1 - DECAY_FACTOR
-          ) ** steps;
-      }
-      steps++;            
-    }
-
-    return networkWalkdownScale * WALKDOWN_DECAY;
-  }
-
-  score(): number {
+  score(update: boolean = false): number {
     if (this.isRoot) {
       return 1
     }
 
-    if (this.currentScore !== 0) {
-      return this.currentScore
+    if (update) {
+      this.baseScore = (
+        (this.baseSocialMediaScore() + this.quadraticVouchingScore())
+          * this.kycIDBoostScore()
+      )
     }
 
-    this.currentScore = (
-      (this.baseSocialMediaScore() + this.quadraticVouchingScore())
-        * this.kycIDBoostScore() 
-        * this.walkupScore() 
-        * this.walkdownScore()
-    )
-
-    return this.currentScore
+    return this.baseScore
   };
+
+  finalScore(): number {
+    if (this.isRoot) {
+      return 1.5;
+    }
+
+    return this.weightedScore;
+  }
+
+  receiveVote(votes: number) {
+    this.quadraticVouch.push(votes);
+    this.score(true);
+  }
+
+  noteNetworkScore(walkupScale: number, walkdownScore: number) {
+    this.weightedScore = walkupScale * walkdownScore * this.score();
+  }
 
   tokenConsumption(): number {
     let tokenConsumption = 0;
@@ -155,7 +99,7 @@ export class Profile {
         tokenConsumption += 2 ** quadraticVouch;
     }
 
-    return tokenConsumption
+    return tokenConsumption * VOTE_PRICE_ETH;
   }
 
   noteInvite(profile: Profile) {
@@ -163,6 +107,6 @@ export class Profile {
   }
 
   isGreenCheckmarked(): boolean {
-    return this.score() >= GREEN_CHECKMARK_THRESHOLD
+    return this.finalScore() >= GREEN_CHECKMARK_THRESHOLD
   }
 };

@@ -1,7 +1,12 @@
-import { simulateTree } from "./simulation";
+import { rebalanceScore, buildTree, runSimulation, simulateVotes } from "./simulation";
 
 const main = () => {
-  simulateTree(5)
+  buildTree(5);
+
+  simulateVotes();
+
+  rebalanceScore();
+  runSimulation();
 }
 
 main();
